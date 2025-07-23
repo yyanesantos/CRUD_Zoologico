@@ -10,7 +10,7 @@ db = functions(
 )
 
 recinto1 = recinto(1, "Do lado da entrada", 30)
-db.criar("recinto", recinto)
+db.criar("recinto", recinto1)
 db.listar("recinto")
 
 cuidador1 = cuidador("Fernanda Lemos", "12345678900", "(85) 99999-9999")
