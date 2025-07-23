@@ -1,5 +1,6 @@
 from Database.functions import functions
 from Tabelas.recinto import recinto
+from Tabelas.cuidador import cuidador
 
 db = functions(
     host="yane-2.local",
@@ -8,6 +9,10 @@ db = functions(
     database="zoologicoo"
 )
 
-recinto = recinto(1, "Do lado da entrada", 30)
-db.criar("recinto", recinto)
+recinto1 = recinto(1, "Do lado da entrada", 30)
+db.criar("recinto", recinto1)
 db.listar("recinto")
+
+cuidador1 = cuidador("Fernanda Lemos", "12345678900", "(85) 99999-9999")
+db.criar("cuidador", cuidador1)
+db.listar("cuidador")
