@@ -19,7 +19,7 @@ def menuAnimal():
             dataNascimento = input("Data de nascimento (AAAA-MM-DD): ")
             sexo = input("Sexo (M/F): ")
             especie = input("Espécie (nome científico): ")
-            recinto = input("Recinto: ")
+            recinto = input("Recinto (ID): ")
             crud.criar_animal(idAnimal, nome, dataNascimento, sexo, especie, recinto)
 
         elif opcao == "2":
