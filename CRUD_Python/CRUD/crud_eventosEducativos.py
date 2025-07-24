@@ -1,68 +1,74 @@
+from typing import Self
 from Tabelas.eventosEducativos import eventosEducativos
 from Database.functions import functions
 
-db = functions(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="zoologicoo"
-)
+class eventosEducativosCrud:
+    def __init__(self, host, user, password, database):
+        self.db = functions(host=host, user=user, password=password, database=database)
 
-def criar_evento(idEvento, nome, data, duracao):
-    novo = eventosEducativos(idEvento, nome, data, duracao)
-    db.criar("eventosEducativos", novo)
+    def criar_evento(self, idEvento, nome, data, duracao):
+        novo = eventosEducativos(idEvento, nome, data, duracao)
+        sucesso = self.db.criar("eventosEducativos", novo)
+        return sucesso
 
-def listar_eventos():
-    eventos = db.listar("eventosEducativos")
-    for e in eventos:
-        print(e)
+    def listar_eventos(self):
+        eventos = self.db.listar("eventosEducativos")
+        for e in eventos:
+            evento = e
+            idEvento = evento[0]
+            nome = evento[1]
+            data = evento[2]
+            duracao = evento[3]
+            animais = self.db.join(
+            "eventosAnimais",
+            "animal",
+            on="t1.idAnimal = t2.idAnimal",
+            campos="t2.idAnimal",
+            where="t1.idEvento = %s",
+            params=(idEvento,)
+            )
+            print("\nEvento")
+            print(f"ID do evento: {idEvento}")
+            print(f"Nome: {nome}")
+            print(f"Data do evento: {data}")
+            print(f"Duração do evento: {duracao}h")
+            if animais:
+                print("ID animais no evento:")
+                for a in animais:
+                    animal = a
+                    idAnimal = animal[0]
+                    print(f"- {idAnimal}")
+            else:
+                print("Sem animais no evento.")
 
-def atualizar_evento(idEvento, nome, data, duracao):
-    campos = ["nome", "data", "duracao"]
-    valores = (nome, data, duracao)
-    db.atualizar("eventosEducativos", campos, valores, "idEvento", idEvento)
+    def atualizar_evento(self, idEvento, nome, data, duracao):
+        campos = ["nome", "data", "duracao"]
+        valores = (nome, data, duracao)
+        self.db.atualizar("eventosEducativos", campos, valores, "idEvento", idEvento)
 
-def remover_evento(idEvento):
-    db.remover("eventosEducativos", "idEvento", idEvento)
+    def remover_evento(self, idEvento):
+        animais = self.db.join(
+            "eventosAnimais",
+            "animal",
+            on="t1.idAnimal = t2.idAnimal",
+            campos="t2.idAnimal",
+            where="t1.idEvento = %s",
+            params=(idEvento,)
+            )
+        for a in animais:
+            animal = a
+            idAnimal = animal[0]
+            self.db.remover_dualTabela("eventosAnimais", {
+            "idEvento": idEvento,
+            "idAnimal": idAnimal
+        }, "evento")
+        self.db.remover("eventosEducativos", "idEvento", idEvento)
 
-def menu():
-    while True:
-        print("\n MENU - EVENTOS EDUCATIVOS")
-        print("1. Criar evento")
-        print("2. Listar eventos")
-        print("3. Atualizar evento")
-        print("4. Remover evento")
-        print("0. Sair")
+    def remover_animal_de_evento(self, idEvento, idAnimal):
+        self.db.remover_dualTabela("eventosAnimais", {
+            "idEvento": idEvento,
+            "idAnimal": idAnimal
+        }, "evento")
 
-        opcao = input("Escolha uma opção: ")
-
-        if opcao == "1":
-            idEvento = input("ID do evento: ")
-            nome = input("Nome: ")
-            data = input("Data (AAAA-MM-DD): ")
-            duracao = input("Duração (em horas): ")
-            criar_evento(idEvento, nome, data, duracao)
-
-        elif opcao == "2":
-            listar_eventos()
-
-        elif opcao == "3":
-            idEvento = input("ID do evento a atualizar: ")
-            nome = input("Novo nome: ")
-            data = input("Nova data (AAAA-MM-DD): ")
-            duracao = input("Nova duração (em horas): ")
-            atualizar_evento(idEvento, nome, data, duracao)
-
-        elif opcao == "4":
-            idEvento = input("ID do evento a remover: ")
-            remover_evento(idEvento)
-
-        elif opcao == "0":
-            print("Saindo...")
-            break
-
-        else:
-            print("Opção inválida.")
-
-if __name__ == "__main__":
-    menu()
+    def adicionar_animal_de_evento(self, idEvento, idAnimal):
+        self.db.adicionar_dualTabela("eventosAnimais", ["idEvento", "idAnimal"], (idEvento, idAnimal))

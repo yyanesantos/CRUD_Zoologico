@@ -1,72 +1,104 @@
+from typing import Self
 from Tabelas.animal import animal
 from Database.functions import functions
 
-db = functions(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="zoologicoo"
-)
+class animalCrud:
+    def __init__(self, host, user, password, database):
+        self.db = functions(host=host, user=user, password=password, database=database)
 
-def criar_animal(idAnimal, nome, dataNascimento, sexo, especie, recinto):
-    novo = animal(idAnimal, nome, dataNascimento, sexo, especie, recinto)
-    db.criar("animal", novo)
+    def criar_animal(self,idAnimal, nome, dataNascimento, sexo, especie, recinto):
+        novo = animal(idAnimal, nome, dataNascimento, sexo, especie, recinto)
+        self.db.criar("animal", novo)
 
-def listar_animais():
-    animais = db.listar("animal")
-    for a in animais:
-        print(a)
+    def listar_animais(self):
+        animais = self.db.listar("animal")
+        for a in animais:
+            animal = a
+            id_animal = animal[0]
+            nome = animal[1].capitalize()
+            data_nasc = animal[2].strftime("%d/%m/%Y")  # formata a data para dia/mês/ano
+            sexo = animal[3]
+            especie = animal[4]
+            id_recinto = animal[5]
+            cuidadores = self.db.join(
+            "cuidadorAnimal",
+            "cuidador",
+            on="t1.cpfCuidador = t2.cpf",
+            campos="t2.nome, t2.cpf, t2.telefone",
+            where="t1.idAnimal = %s",
+            params=(id_animal,)
+            )
+            eventos = self.db.join(
+            "eventosAnimais",
+            "eventosEducativos",
+            on="t1.idEvento = t2.idEvento",
+            campos="t2.idEvento, t2.nome, t2.data, t2.duracao",
+            where="t1.idAnimal = %s",
+            params=(id_animal,)
+            )
 
-def atualizar_animal(idAnimal, nome, dataNascimento, sexo, especie, recinto):
-    campos = ["nome", "dataNascimento", "sexo", "especie", "recinto"]
-    valores = (nome, dataNascimento, sexo, especie, recinto)
-    db.atualizar("animal", campos, valores, "idAnimal", idAnimal)
+            print("\nAnimal")
+            print(f"ID: {id_animal}")
+            print(f"Nome: {nome}")
+            print(f"Data de nascimento: {data_nasc}")
+            print(f"Sexo: {sexo}")
+            print(f"Espécie: {especie}")
+            print(f"ID do recinto: {id_recinto}")
+            if cuidadores:
+                print("CPF Cuidadores:")
+                for c in cuidadores:
+                    cuidador = c
+                    cpfCuidador = cuidador[1]
+                    print(f"- {cpfCuidador}")
+            else:
+                print("Sem cuidadores.")
+            if eventos:
+                print("ID(s) eventos:")
+                for e in eventos:
+                    evento = e
+                    idEvento = evento[0]
+                    print(f"- {idEvento}")
+            else:
+                print("Sem eventos participantes.")
 
-def remover_animal(idAnimal):
-    db.remover("animal", "idAnimal", idAnimal)
+        
 
-def menu():
-    while True:
-        print("\n MENU - ANIMAIS")
-        print("1. Criar animal")
-        print("2. Listar animais")
-        print("3. Atualizar animal")
-        print("4. Remover animal")
-        print("0. Sair")
+    def atualizar_animal(self, idAnimal, nome, dataNascimento, sexo, especie, recinto):
+        campos = ["nome", "dataNascimento", "sexo", "especie", "recinto"]
+        valores = (nome, dataNascimento, sexo, especie, recinto)
+        self.db.atualizar("animal", campos, valores, "idAnimal", idAnimal)
 
-        opcao = input("Escolha uma opção: ")
+    def remover_animal(self, idAnimal):
+        cuidadores = self.db.join(
+            "cuidadorAnimal",
+            "cuidador",
+            on="t1.cpfCuidador = t2.cpf",
+            campos="t2.nome, t2.cpf, t2.telefone",
+            where="t1.idAnimal = %s",
+            params=(idAnimal,)
+            )
+        eventos = self.db.join(
+            "eventosAnimais",
+            "eventosEducativos",
+            on="t1.idEvento = t2.idEvento",
+            campos="t2.idEvento, t2.nome, t2.data, t2.duracao",
+            where="t1.idAnimal = %s",
+            params=(idAnimal,)
+            )
+        for c in cuidadores:
+            cuidador = c
+            cpfCuidador = cuidador[1]
+            self.db.remover_dualTabela("cuidadorAnimal", {
+                "cpfCuidador": cpfCuidador,
+                "idAnimal": idAnimal
+            }, "animal")
+        for e in eventos:
+            evento = e
+            idEvento = evento[0]
+            self.db.remover_dualTabela("eventosAnimais", {
+                "idEvento": idEvento,
+                "idAnimal": idAnimal
+            }, "evento")
+        self.db.remover("animal", "idAnimal", idAnimal)
 
-        if opcao == "1":
-            idAnimal = input("ID do animal: ")
-            nome = input("Nome: ")
-            dataNascimento = input("Data de nascimento (AAAA-MM-DD): ")
-            sexo = input("Sexo (M/F): ")
-            especie = input("Espécie (nome científico): ")
-            recinto = input("Recinto: ")
-            criar_animal(idAnimal, nome, dataNascimento, sexo, especie, recinto)
-
-        elif opcao == "2":
-            listar_animais()
-
-        elif opcao == "3":
-            idAnimal = input("ID do animal a atualizar: ")
-            nome = input("Novo nome: ")
-            dataNascimento = input("Nova data de nascimento (AAAA-MM-DD): ")
-            sexo = input("Novo sexo (M/F): ")
-            especie = input("Nova espécie (nome científico): ")
-            recinto = input("Novo recinto: ")
-            atualizar_animal(idAnimal, nome, dataNascimento, sexo, especie, recinto)
-
-        elif opcao == "4":
-            idAnimal = input("ID do animal a remover: ")
-            remover_animal(idAnimal)
-
-        elif opcao == "0":
-            print("Saindo...")
-            break
-
-        else:
-            print("Opção inválida.")
-
-if __name__ == "__main__":
-    menu()
+    

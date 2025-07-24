@@ -1,66 +1,34 @@
+from typing import Self
 from Tabelas.recinto import recinto
 from Database.functions import functions
 
-db = functions(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="zoologicoo"
-)
+class recintoCrud:
+    def __init__(self, host, user, password, database):
+        self.db = functions(host=host, user=user, password=password, database=database)
 
-def criar_recinto(idRecinto, local, capacidadeMaxima):
-    novo = recinto(idRecinto, local, capacidadeMaxima)
-    db.criar("recinto", novo)
 
-def listar_recintos():
-    recintos = db.listar("recinto")
-    for r in recintos:
-        print(r)
+    def criar_recinto(self, idRecinto, local, capacidadeMaxima):
+        novo = recinto(idRecinto, local, capacidadeMaxima)
+        self.db.criar("recinto", novo)
 
-def atualizar_recinto(idRecinto, novo_local, nova_capacidade):
-    campos = ["local", "capacidadeMaxima"]
-    valores = (novo_local, nova_capacidade)
-    db.atualizar("recinto", campos, valores, "idRecinto", idRecinto)
+    def listar_recintos(self):
+        recintos = self.db.listar("recinto")
+        for r in recintos:
+            recinto = r
+            idRecinto = recinto[0]
+            local = recinto[1]
+            capacidadeMaxima = recinto[2]
+            print("\nRecinto")
+            print(f"ID do recinto: {idRecinto}")
+            print(f"Local: {local}")
+            print(f"Capacidade máxima: {capacidadeMaxima}")
 
-def remover_recinto(idRecinto):
-    db.remover("recinto", "idRecinto", idRecinto)
+    def atualizar_recinto(self, idRecinto, novo_local, nova_capacidade):
+        campos = ["local", "capacidadeMaxima"]
+        valores = (novo_local, nova_capacidade)
+        self.db.atualizar("recinto", campos, valores, "idRecinto", idRecinto)
 
-def menu():
-    while True:
-        print("\n🏠 MENU - RECINTO")
-        print("1. Criar recinto")
-        print("2. Listar recintos")
-        print("3. Atualizar recinto")
-        print("4. Remover recinto")
-        print("0. Sair")
+    def remover_recinto(self, idRecinto):
+        self.db.remover("recinto", "idRecinto", idRecinto)
 
-        opcao = input("Escolha uma opção: ")
-
-        if opcao == "1":
-            idRecinto = int(input("ID do recinto: "))
-            local = input("Local do recinto: ")
-            capacidadeMaxima = int(input("Capacidade máxima: "))
-            criar_recinto(idRecinto, local, capacidadeMaxima)
-
-        elif opcao == "2":
-            listar_recintos()
-
-        elif opcao == "3":
-            idRecinto = int(input("ID do recinto a atualizar: "))
-            novo_local = input("Novo local: ")
-            nova_capacidade = int(input("Nova capacidade máxima: "))
-            atualizar_recinto(idRecinto, novo_local, nova_capacidade)
-
-        elif opcao == "4":
-            idRecinto = int(input("ID do recinto a remover: "))
-            remover_recinto(idRecinto)
-
-        elif opcao == "0":
-            print("Saindo...")
-            break
-
-        else:
-            print("Opção inválida.")
-
-if __name__ == "__main__":
-    menu()
+    

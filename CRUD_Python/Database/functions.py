@@ -15,7 +15,6 @@ class functions:
 
     def remover(self, tabela, campo, objeto_ou_valor):
         try:
-            # Se for um objeto com o atributo, extrai o valor
             valor = getattr(objeto_ou_valor, campo) if hasattr(objeto_ou_valor, campo) else objeto_ou_valor # valor direto (ex: int ou str)
             conn = self.conectar()
             cursor = conn.cursor()
@@ -49,9 +48,11 @@ class functions:
             conn.commit()
 
             print("Dado inserido com sucesso!")
+            return True
 
         except mysql.connector.Error as erro:
             print(f"Erro ao inserir dado: {erro}")
+            return False
         finally:
             cursor.close()
             conn.close()
@@ -65,11 +66,11 @@ class functions:
             cursor.execute(sql)
             resultados = cursor.fetchall()
 
-            for linha in resultados:
-                print(linha)
+            return resultados
 
         except mysql.connector.Error as erro:
             print(f"Erro ao consultar dados: {erro}")
+            return []
         finally:
             cursor.close()
             conn.close()
@@ -87,12 +88,71 @@ class functions:
             conn.commit()
 
             if cursor.rowcount == 0:
-                print("⚠️ Nenhum registro foi atualizado.")
+                print("Nenhum registro foi atualizado.")
             else:
-                print("✅ Registro atualizado com sucesso!")
+                print("Registro atualizado com sucesso!")
 
         except mysql.connector.Error as erro:
             print(f"Erro ao atualizar: {erro}")
+        finally:
+            cursor.close()
+            conn.close()
+    
+    def join(self, tabela1, tabela2, on, campos="*", where=None, params=None):
+        try:
+            conn = self.conectar()
+            cursor = conn.cursor()
+
+            sql = f"SELECT {campos} FROM {tabela1} t1 JOIN {tabela2} t2 ON {on}"
+            if where:
+                sql += f" WHERE {where}"
+
+            cursor.execute(sql, params if params else ())
+            resultados = cursor.fetchall()
+            return resultados
+
+        except mysql.connector.Error as erro:
+            print(f"Erro ao fazer JOIN entre {tabela1} e {tabela2}: {erro}")
+            return []
+        finally:
+            cursor.close()
+            conn.close()
+
+    def adicionar_dualTabela(self, tabela, campos, valores):
+        try:
+            conn = self.conectar()
+            cursor = conn.cursor()
+
+            campos_str = ", ".join(campos)
+            placeholders = ", ".join(["%s"] * len(campos))
+            sql = f"INSERT INTO {tabela} ({campos_str}) VALUES ({placeholders})"
+
+            cursor.execute(sql, valores)
+            conn.commit()
+
+            print(f"Inserido em '{tabela}' com sucesso!")
+
+        except mysql.connector.Error as erro:
+            print(f"Erro ao inserir em '{tabela}': {erro}")
+            print("Tente novamente.")
+        finally:
+            cursor.close()
+            conn.close()
+    
+    def remover_dualTabela(self, tabela, condicoes, texto):
+        try:
+            conn = self.conectar()
+            cursor = conn.cursor()
+
+            where_clause = " AND ".join(f"{campo} = %s" for campo in condicoes)
+            valores = tuple(condicoes.values())
+
+            sql = f"DELETE FROM {tabela} WHERE {where_clause}"
+            cursor.execute(sql, valores)
+            conn.commit()
+            print(f"Associação removida com sucesso do {texto}'.")
+        except mysql.connector.Error as erro:
+            print(f"Erro ao remover associação da tabela '{tabela}': {erro}")
         finally:
             cursor.close()
             conn.close()

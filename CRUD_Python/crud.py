@@ -1,41 +1,35 @@
-from Database.functions import functions
-from Tabelas.recinto import recinto
-from Tabelas.cuidador import cuidador
-from CRUD.crud_recinto import criar_recinto
-from Tabelas.especie import especie
-from CRUD.crud_animal import criar_animal
-from CRUD.crud_eventosEducativos import criar_evento
-from datetime import datetime
-from Tabelas.eventosEducativos import eventosEducativos
-from Tabelas.animal import animal
-from CRUD.crud_animal import criar_animal
+from Menu.menu_animal import menuAnimal
+from Menu.menu_cuidador import menuCuidador
+from Menu.menu_especie import menuEspecie
+from Menu.menu_eventosEducativos import menuEventosEducativos
+from Menu.menu_recinto import menuRecinto
 
+def menuPrincipal():
+    while True:
+        print("\n🐾 Zoológico")
+        print("")
+        print("1. Animal")
+        print("2. Cuidador")
+        print("3. Espécie")
+        print("4. Eventos Educativos")
+        print("5. Recinto")
+        print("0. Sair")
 
-db = functions(
-    host="yane-2.local",
-    user="root",
-    password="12345678",
-    database="zoologicoo"
-)
+        opcao = input("Escolha a opção que você deseja visualizar: ")
+        if opcao == "1":
+            menuAnimal()
+        if opcao == "2":
+            menuCuidador()
+        if opcao == "3":
+            menuEspecie()
+        if opcao == "4":
+            menuEventosEducativos()
+        if opcao == "5":
+            menuRecinto()
+        elif opcao == "0":
+            print("Encerrando o programa...")
+            break
+        else:
+            print("Opção inválida.")
 
-
-recinto1 = recinto(2, "Do lado da entrada", 30)
-criar_recinto(2, "Do lado da entrada", 30)
-db.listar("recinto")
-
-cuidador1 = cuidador("Fernanda Lemos", "12345678900", "(85) 99999-9999")
-db.criar("cuidador", cuidador1)
-db.listar("cuidador")
-
-especie1 = especie("Lehonysys Fulanys", "Leão", "Savana africana")
-db.criar("especie", especie1)
-db.listar("especie")
-
-evento = eventosEducativos(1, "Parque em ação", "2025-07-08", 1)
-criar_evento(11, "Leões por todo o lado!", "2025-07-23", 60000)
-db.listar("eventosEducativos")
-
-animal = animal(1, "ricardo", "2025-07-08", "F", "Lehonysys Fulanys", 1)
-criar_animal(2, "ricardo", "2025-07-08", "F", "Lehonysys Fulanys", 1)
-db.listar("animal")
-
+menuPrincipal()
