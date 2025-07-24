@@ -15,7 +15,6 @@ class functions:
 
     def remover(self, tabela, campo, objeto_ou_valor):
         try:
-            # Se for um objeto com o atributo, extrai o valor
             valor = getattr(objeto_ou_valor, campo) if hasattr(objeto_ou_valor, campo) else objeto_ou_valor # valor direto (ex: int ou str)
             conn = self.conectar()
             cursor = conn.cursor()
@@ -67,8 +66,6 @@ class functions:
             cursor.execute(sql)
             resultados = cursor.fetchall()
 
-            #for linha in resultados:
-            #    print(linha)
             return resultados
 
         except mysql.connector.Error as erro:
@@ -91,9 +88,9 @@ class functions:
             conn.commit()
 
             if cursor.rowcount == 0:
-                print("⚠️ Nenhum registro foi atualizado.")
+                print("Nenhum registro foi atualizado.")
             else:
-                print("✅ Registro atualizado com sucesso!")
+                print("Registro atualizado com sucesso!")
 
         except mysql.connector.Error as erro:
             print(f"Erro ao atualizar: {erro}")
@@ -137,6 +134,7 @@ class functions:
 
         except mysql.connector.Error as erro:
             print(f"Erro ao inserir em '{tabela}': {erro}")
+            print("Tente novamente.")
         finally:
             cursor.close()
             conn.close()
@@ -155,25 +153,6 @@ class functions:
             print(f"Associação removida com sucesso do {texto}'.")
         except mysql.connector.Error as erro:
             print(f"Erro ao remover associação da tabela '{tabela}': {erro}")
-        finally:
-            cursor.close()
-            conn.close()
-    
-    def adicionar_dualTabela(self, tabela, colunas, valores):
-        try:
-            conn = self.conectar()
-            cursor = conn.cursor()
-
-            colunas_str = ", ".join(colunas)
-            placeholders = ", ".join(["%s"] * len(colunas))
-            sql = f"INSERT INTO {tabela} ({colunas_str}) VALUES ({placeholders})"
-
-            cursor.execute(sql, valores)
-            conn.commit()
-            print(f"Animal adicionado com sucesso.")
-
-        except mysql.connector.Error as erro:
-            print(f"Erro ao inserir em '{tabela}': {erro}")
         finally:
             cursor.close()
             conn.close()

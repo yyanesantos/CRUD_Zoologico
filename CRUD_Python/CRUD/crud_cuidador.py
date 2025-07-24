@@ -45,6 +45,21 @@ class cuidadorCrud:
         self.db.atualizar("cuidador", campos, valores, "cpf", cpf)
 
     def remover_cuidador(self,cpf):
+        animais = self.db.join(
+            "cuidadorAnimal",
+            "animal",
+            on="t1.idAnimal = t2.idAnimal",
+            campos="t2.idAnimal",
+            where="t1.cpfCuidador = %s",
+            params=(cpf,)
+            )
+        for a in animais:
+            animal = a
+            idAnimal = animal[0]
+            self.db.remover_dualTabela("cuidadorAnimal", {
+                "cpfCuidador": cpf,
+                "idAnimal": idAnimal
+            }, "cuidador")
         self.db.remover("cuidador", "cpf", cpf)
 
     def remover_animal_de_cuidador(self, cpf, idAnimal):

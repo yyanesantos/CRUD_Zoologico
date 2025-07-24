@@ -23,8 +23,16 @@ class animalCrud:
             cuidadores = self.db.join(
             "cuidadorAnimal",
             "cuidador",
-            on="t1.cpfCuidador = t2.cpfCuidador",
-            campos="t2.cpfCuidador",
+            on="t1.cpfCuidador = t2.cpf",
+            campos="t2.nome, t2.cpf, t2.telefone",
+            where="t1.idAnimal = %s",
+            params=(id_animal,)
+            )
+            eventos = self.db.join(
+            "eventosAnimais",
+            "eventosEducativos",
+            on="t1.idEvento = t2.idEvento",
+            campos="t2.idEvento, t2.nome, t2.data, t2.duracao",
             where="t1.idAnimal = %s",
             params=(id_animal,)
             )
@@ -44,6 +52,14 @@ class animalCrud:
                     print(f"- {cpfCuidador}")
             else:
                 print("Sem cuidadores.")
+            if eventos:
+                print("ID(s) eventos:")
+                for e in eventos:
+                    evento = e
+                    idEvento = evento[0]
+                    print(f"- {idEvento}")
+            else:
+                print("Sem eventos participantes.")
 
         
 
@@ -53,6 +69,36 @@ class animalCrud:
         self.db.atualizar("animal", campos, valores, "idAnimal", idAnimal)
 
     def remover_animal(self, idAnimal):
+        cuidadores = self.db.join(
+            "cuidadorAnimal",
+            "cuidador",
+            on="t1.cpfCuidador = t2.cpf",
+            campos="t2.nome, t2.cpf, t2.telefone",
+            where="t1.idAnimal = %s",
+            params=(idAnimal,)
+            )
+        eventos = self.db.join(
+            "eventosAnimais",
+            "eventosEducativos",
+            on="t1.idEvento = t2.idEvento",
+            campos="t2.idEvento, t2.nome, t2.data, t2.duracao",
+            where="t1.idAnimal = %s",
+            params=(idAnimal,)
+            )
+        for c in cuidadores:
+            cuidador = c
+            cpfCuidador = cuidador[1]
+            self.db.remover_dualTabela("cuidadorAnimal", {
+                "cpfCuidador": cpfCuidador,
+                "idAnimal": idAnimal
+            }, "animal")
+        for e in eventos:
+            evento = e
+            idEvento = evento[0]
+            self.db.remover_dualTabela("eventosAnimais", {
+                "idEvento": idEvento,
+                "idAnimal": idAnimal
+            }, "evento")
         self.db.remover("animal", "idAnimal", idAnimal)
 
     

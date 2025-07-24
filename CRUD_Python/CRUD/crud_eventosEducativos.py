@@ -39,7 +39,7 @@ class eventosEducativosCrud:
                     idAnimal = animal[0]
                     print(f"- {idAnimal}")
             else:
-                print("Sem animais cuidados.")
+                print("Sem animais no evento.")
 
     def atualizar_evento(self, idEvento, nome, data, duracao):
         campos = ["nome", "data", "duracao"]
@@ -47,6 +47,21 @@ class eventosEducativosCrud:
         self.db.atualizar("eventosEducativos", campos, valores, "idEvento", idEvento)
 
     def remover_evento(self, idEvento):
+        animais = self.db.join(
+            "eventosAnimais",
+            "animal",
+            on="t1.idAnimal = t2.idAnimal",
+            campos="t2.idAnimal",
+            where="t1.idEvento = %s",
+            params=(idEvento,)
+            )
+        for a in animais:
+            animal = a
+            idAnimal = animal[0]
+            self.db.remover_dualTabela("eventosAnimais", {
+            "idEvento": idEvento,
+            "idAnimal": idAnimal
+        }, "evento")
         self.db.remover("eventosEducativos", "idEvento", idEvento)
 
     def remover_animal_de_evento(self, idEvento, idAnimal):
