@@ -1,66 +1,34 @@
+from typing import Self
 from Tabelas.especie import especie
 from Database.functions import functions
 
-db = functions(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="zoologicoo"
-)
+class especieCrud:
+    def __init__(self, host, user, password, database):
+        self.db = functions(host=host, user=user, password=password, database=database)
 
-def criar_especie(nomeCientifico, nomeComum, habitatNatural):
-    nova = especie(nomeCientifico, nomeComum, habitatNatural)
-    db.criar("especie", nova)
+    def criar_especie(self, nomeCientifico, nomeComum, habitatNatural):
+        nova = especie(nomeCientifico, nomeComum, habitatNatural)
+        self.db.criar("especie", nova)
 
-def listar_especies():
-    especies = db.listar("especie")
-    for e in especies:
-        print(e)
+    def listar_especies(self):
+        especies = self.db.listar("especie")
+        for e in especies:
+            especie = e
+            nomeCientifico = especie[0]
+            nomeComum = especie[1]
+            habitatNatural = especie[2]
+            print("\nEspécie")
+            print(f"Nome científico: {nomeCientifico}")
+            print(f"Nome comum: {nomeComum}")
+            print(f"Habitat natural: {habitatNatural}")
 
-def atualizar_especie(nomeCientifico, novo_nomeComum, novo_habitat):
-    campos = ["nomeComum", "habitatNatural"]
-    valores = (novo_nomeComum, novo_habitat)
-    db.atualizar("especie", campos, valores, "nomeCientifico", nomeCientifico)
 
-def remover_especie(nomeCientifico):
-    db.remover("especie", "nomeCientifico", nomeCientifico)
+    def atualizar_especie(self, nomeCientifico, novo_nomeComum, novo_habitat):
+        campos = ["nomeComum", "habitatNatural"]
+        valores = (novo_nomeComum, novo_habitat)
+        self.db.atualizar("especie", campos, valores, "nomeCientifico", nomeCientifico)
 
-def menu():
-    while True:
-        print("\n🐾 MENU - ESPÉCIE")
-        print("1. Criar espécie")
-        print("2. Listar espécies")
-        print("3. Atualizar espécie")
-        print("4. Remover espécie")
-        print("0. Sair")
+    def remover_especie(self, nomeCientifico):
+        self.db.remover("especie", "nomeCientifico", nomeCientifico)
 
-        opcao = input("Escolha uma opção: ")
-
-        if opcao == "1":
-            nomeCientifico = input("Nome científico: ")
-            nomeComum = input("Nome comum: ")
-            habitatNatural = input("Habitat natural: ")
-            criar_especie(nomeCientifico, nomeComum, habitatNatural)
-
-        elif opcao == "2":
-            listar_especies()
-
-        elif opcao == "3":
-            nomeCientifico = input("Nome científico da espécie a atualizar: ")
-            novo_nomeComum = input("Novo nome comum: ")
-            novo_habitat = input("Novo habitat natural: ")
-            atualizar_especie(nomeCientifico, novo_nomeComum, novo_habitat)
-
-        elif opcao == "4":
-            nomeCientifico = input("Nome científico da espécie a remover: ")
-            remover_especie(nomeCientifico)
-
-        elif opcao == "0":
-            print("Saindo...")
-            break
-
-        else:
-            print("Opção inválida.")
-
-if __name__ == "__main__":
-    menu()
+    
